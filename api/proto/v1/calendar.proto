@@ -1,0 +1,194 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+package calendar_v1;
+
+option go_package = "calendar_service/pkg/proto/calendar/v1;calendar_v1";
+
+service CalendarService {
+    rpc CreateCalendar(CreateCalendarRequest) returns (CalendarResponse) {
+        option (google.api.http) = {
+            post: "/v1/calendars"
+            body: "*"
+        };
+    }
+    rpc GetCalendars(GetCalendarsRequest) returns (GetCalendarsResponse) {
+        option (google.api.http) = {
+            get: "/v1/calendars"
+        };
+    }
+    rpc GetCalendarInfo(GetCalendarInfoRequest) returns (CalendarResponse) {
+        option (google.api.http) = {
+            get: "/v1/calendars/{id}"
+        };
+    }
+    rpc UpdateCalendar(UpdateCalendarRequest) returns (CalendarResponse) {
+        option (google.api.http) = {
+            patch: "/v1/calendars/{id}"
+            body: "*"
+        };
+    }
+    rpc DeleteCalendar(DeleteCalendarRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/calendars/{id}"
+        };
+    }
+    rpc CreateEvent(CreateEventRequest) returns (EventResponse) {
+        option (google.api.http) = {
+            post: "/v1/calendars/{calendar_id}/events"
+            body: "*"
+        };
+    }
+    rpc UpdateEvent(UpdateEventRequest) returns (EventResponse) {
+        option (google.api.http) = {
+            patch: "/v1/events/{id}"
+            body: "*"
+        };
+    }
+    rpc DeleteEvent(DeleteEventRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/events/{id}"
+        };
+    }
+    rpc GetEvents(GetEventsRequest) returns (GetEventsResponse) {
+        option (google.api.http) = {
+            get: "/v1/calendars/{calendar_id}/events"
+        };
+    }
+    rpc CreateCategory(CreateEventCategoryRequest) returns (EventCategoryResponse) {
+        option (google.api.http) = {
+            post: "/v1/users/{user_id}/categories"
+            body: "*"
+        };
+    }
+    rpc UpdateCategory(UpdateEventCategoryRequest) returns (EventCategoryResponse) {
+        option (google.api.http) = {
+            patch: "/v1/categories/{id}"
+            body: "*"
+        };
+    }
+    rpc DeleteCategory(DeleteEventCategoryRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/categories/{id}"
+        };
+    }
+    rpc GetCategories(GetCategoriesRequest) returns (GetCategoriesResponse) {
+        option (google.api.http) = {
+            get: "/v1/users/{user_id}/categories"
+        };
+    }
+}
+
+message CreateCalendarRequest {
+    string name = 1;
+    string user_id = 2;
+}
+
+message CalendarResponse {
+    string id = 1;
+    string name = 2;
+    string user_id = 3;
+    repeated string events_id = 4;
+    string created_at = 5;
+    string updated_at = 6;
+}
+
+message GetCalendarsRequest {
+    string user_id = 1;
+}
+
+message GetCalendarsResponse {
+    repeated CalendarResponse calendars = 1;
+}
+
+message GetCalendarInfoRequest {
+    string id = 1;
+}
+
+message UpdateCalendarRequest {
+    string id = 1;
+    google.protobuf.StringValue name = 2;
+}
+
+message DeleteCalendarRequest {
+    string id = 1;
+}
+
+message CreateEventRequest {
+    string title = 1;
+    string description = 2;
+    string start_time = 3;
+    string end_time = 4;
+    google.protobuf.StringValue location = 5;
+    string calendar_id = 6;
+    string category_id = 7;
+}
+
+message EventResponse {
+    string id = 1;
+    string title = 2;
+    string description = 3;
+    string start_time = 4;
+    string end_time = 5;
+    google.protobuf.StringValue location = 6;
+    string calendar_id = 7;
+    string category_id = 8;
+    string created_at = 9;
+    string updated_at = 10;
+}
+
+message UpdateEventRequest {
+    string id = 1;
+    google.protobuf.StringValue title = 2;
+    google.protobuf.StringValue description = 3;
+    google.protobuf.StringValue start_time = 4;
+    google.protobuf.StringValue end_time = 5;
+    google.protobuf.StringValue location = 6;
+    google.protobuf.StringValue category_id = 7;
+}
+
+message DeleteEventRequest {
+    string id = 1;
+}
+
+message GetEventsRequest {
+    string calendar_id = 1;
+}
+
+message GetEventsResponse {
+    repeated EventResponse events = 1;
+}
+
+message CreateEventCategoryRequest {
+    string name = 1;
+    string color = 2;
+    string user_id = 3;
+}
+
+message EventCategoryResponse {
+    string id = 1;
+    string name = 2;
+    string color = 3;
+    string user_id = 4;
+}
+
+message UpdateEventCategoryRequest {
+    string id = 1;
+    google.protobuf.StringValue name = 2;
+    google.protobuf.StringValue color = 3;
+}
+
+message DeleteEventCategoryRequest {
+    string id = 1;
+}
+
+message GetCategoriesRequest {
+    string user_id = 1;
+}
+
+message GetCategoriesResponse {
+    repeated EventCategoryResponse categories = 1;
+}
