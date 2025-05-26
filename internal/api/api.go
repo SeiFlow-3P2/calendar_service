@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	pb "github.com/SeiFlow-3P2/calendar_service/pkg/proto/calendar/v1"
+	pb "github.com/SeiFlow-3P2/calendar_service/pkg/proto/v1"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 

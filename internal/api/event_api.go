@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	pb "github.com/SeiFlow-3P2/calendar_service/pkg/proto/calendar/v1"
+	pb "github.com/SeiFlow-3P2/calendar_service/pkg/proto/v1"
 
 	"github.com/SeiFlow-3P2/calendar_service/internal/service"
 
