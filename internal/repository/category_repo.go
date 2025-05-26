@@ -65,7 +65,7 @@ func (r *categoryRepository) GetCategories(ctx context.Context, userID string) (
 	defer cursor.Close(ctx)
 	for cursor.Next(ctx) {
 		var category models.Category
-		if err := cursor.Decode(&category); coutinueerr != nil {
+		if err := cursor.Decode(&category); err != nil {
 			return nil, err
 		}
 		categories = append(categories, &category)

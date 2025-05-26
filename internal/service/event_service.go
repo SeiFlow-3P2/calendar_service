@@ -78,24 +78,48 @@ func (s *EventService) UpdateEvent(ctx context.Context, input UpdateEventInput) 
 		return nil, err
 	}
 
-	updates := &repository.EventUpdates{}
-	now := time.Now()
-
-	if input.Title != nil {
-		updates.Title = input.Title
+	updates := &repository.EventUpdates{
+		Title:       input.Title,
+		Description: input.Description,
+		StartTime:   input.StartTime,
+		EndTime:     input.EndTime,
+		Location:    input.Location,
+		CategoryID:  input.CategoryID,
+		UpdatedAt:   new(time.Time),
 	}
-	updates.Description = input.Description
-	updates.StartTime = input.StartTime
-	updates.EndTime = input.EndTime
-	updates.Location = input.Location
-	updates.CategoryID = input.CategoryID
-	updates.UpdatedAt = &now
+	*updates.UpdatedAt = time.Now()
+
+	if updates.Title == nil {
+		updates.Title = &event.Title
+	}
+
+	if updates.Description == nil {
+		updates.Description = &event.Description
+	}
+
+	if updates.StartTime == nil {
+		updates.StartTime = &event.StartTime
+	}
+	if updates.EndTime == nil {
+		updates.EndTime = &event.EndTime
+	}
+	if updates.Location == nil {
+		updates.Location = &event.Location
+	}
+	if updates.CategoryID == nil {
+		updates.CategoryID = &event.CategoryID
+	}
 
 	if updates.StartTime != nil && updates.EndTime != nil && updates.StartTime.After(*updates.EndTime) {
 		return nil, errors.New("start_time must be before end_time")
 	}
 
-	return s.eventRepo.UpdateEvent(ctx, input.ID, updates)
+	updatedEvent, err := s.eventRepo.UpdateEvent(ctx, input.ID, updates)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedEvent, nil
 }
 
 func (s *EventService) DeleteEvent(ctx context.Context, id string) error {
