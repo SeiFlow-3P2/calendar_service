@@ -3,9 +3,11 @@ package api
 import (
 	"context"
 
-	"calendar_service/internal/models"
-	"calendar_service/internal/service"
+	"github.com/SeiFlow-3P2/calendar_service/internal/service"
+
 	pb "calendar_service/pkg/proto/calendar/v1"
+
+	"github.com/SeiFlow-3P2/calendar_service/internal/models"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"

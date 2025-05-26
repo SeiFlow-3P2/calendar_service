@@ -4,11 +4,10 @@ import (
 	"context"
 	"time"
 
-	"calendar_service/internal/models"
+	"github.com/SeiFlow-3P2/calendar_service/internal/models"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type EventRepository interface {

@@ -5,8 +5,9 @@ import (
 	"errors"
 	"time"
 
-	"calendar_service/internal/models"
-	"calendar_service/internal/repository"
+	"github.com/SeiFlow-3P2/calendar_service/internal/repository"
+
+	"github.com/SeiFlow-3P2/calendar_service/internal/models"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
