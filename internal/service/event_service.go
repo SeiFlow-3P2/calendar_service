@@ -5,9 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/SeiFlow-3P2/calendar_service/internal/repository"
-
 	"github.com/SeiFlow-3P2/calendar_service/internal/models"
+	"github.com/SeiFlow-3P2/calendar_service/internal/repository"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -16,11 +15,15 @@ var (
 )
 
 type EventService struct {
-	eventRepo repository.EventRepository
+	eventRepo    repository.EventRepository
+	categoryRepo repository.CategoryRepository
 }
 
-func NewEventService(eventRepo repository.EventRepository) *EventService {
-	return &EventService{eventRepo: eventRepo}
+func NewEventService(eventRepo repository.EventRepository, categoryRepo repository.CategoryRepository) *EventService {
+	return &EventService{
+		eventRepo:    eventRepo,
+		categoryRepo: categoryRepo,
+	}
 }
 
 type CreateEventInput struct {
@@ -52,6 +55,15 @@ func (s *EventService) CreateEvent(ctx context.Context, input CreateEventInput) 
 	if input.StartTime.After(input.EndTime) {
 		return nil, errors.New("start_time must be before end_time")
 	}
+	if input.CategoryID != "" {
+		_, err := s.categoryRepo.GetCategoryInfo(ctx, input.CategoryID)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				return nil, errors.New("category not found")
+			}
+			return nil, err
+		}
+	}
 
 	event := &models.Event{
 		Title:       input.Title,
@@ -70,7 +82,7 @@ func (s *EventService) GetEvents(ctx context.Context) ([]*models.Event, error) {
 }
 
 func (s *EventService) UpdateEvent(ctx context.Context, input UpdateEventInput) (*models.Event, error) {
-	event, err := s.eventRepo.GetEventInfo(ctx, input.ID)
+	_, err := s.eventRepo.GetEventInfo(ctx, input.ID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrEventNotFound
@@ -78,48 +90,33 @@ func (s *EventService) UpdateEvent(ctx context.Context, input UpdateEventInput) 
 		return nil, err
 	}
 
-	updates := &repository.EventUpdates{
-		Title:       input.Title,
-		Description: input.Description,
-		StartTime:   input.StartTime,
-		EndTime:     input.EndTime,
-		Location:    input.Location,
-		CategoryID:  input.CategoryID,
-		UpdatedAt:   new(time.Time),
-	}
-	*updates.UpdatedAt = time.Now()
+	updates := &repository.EventUpdates{}
+	now := time.Now()
 
-	if updates.Title == nil {
-		updates.Title = &event.Title
+	if input.Title != nil {
+		updates.Title = input.Title
 	}
-
-	if updates.Description == nil {
-		updates.Description = &event.Description
-	}
-
-	if updates.StartTime == nil {
-		updates.StartTime = &event.StartTime
-	}
-	if updates.EndTime == nil {
-		updates.EndTime = &event.EndTime
-	}
-	if updates.Location == nil {
-		updates.Location = &event.Location
-	}
-	if updates.CategoryID == nil {
-		updates.CategoryID = &event.CategoryID
-	}
+	updates.Description = input.Description
+	updates.StartTime = input.StartTime
+	updates.EndTime = input.EndTime
+	updates.Location = input.Location
+	updates.CategoryID = input.CategoryID
+	updates.UpdatedAt = &now
 
 	if updates.StartTime != nil && updates.EndTime != nil && updates.StartTime.After(*updates.EndTime) {
 		return nil, errors.New("start_time must be before end_time")
 	}
-
-	updatedEvent, err := s.eventRepo.UpdateEvent(ctx, input.ID, updates)
-	if err != nil {
-		return nil, err
+	if updates.CategoryID != nil && *updates.CategoryID != "" {
+		_, err := s.categoryRepo.GetCategoryInfo(ctx, *updates.CategoryID)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				return nil, errors.New("category not found")
+			}
+			return nil, err
+		}
 	}
 
-	return updatedEvent, nil
+	return s.eventRepo.UpdateEvent(ctx, input.ID, updates)
 }
 
 func (s *EventService) DeleteEvent(ctx context.Context, id string) error {

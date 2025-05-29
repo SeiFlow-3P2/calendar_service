@@ -16,6 +16,7 @@ type EventRepository interface {
 	GetEvents(ctx context.Context) ([]*models.Event, error)
 	UpdateEvent(ctx context.Context, id string, updates *EventUpdates) (*models.Event, error)
 	DeleteEvent(ctx context.Context, id string) error
+	EnsureIndexes(ctx context.Context) error // Новый метод
 }
 
 type EventUpdates struct {
@@ -120,4 +121,20 @@ func (r *eventRepository) DeleteEvent(ctx context.Context, id string) error {
 	collection := r.db.Collection("events")
 	_, err := collection.DeleteOne(ctx, bson.M{"_id": id})
 	return err
+}
+
+func (r *eventRepository) EnsureIndexes(ctx context.Context) error {
+	collection := r.db.Collection("events")
+
+	// Создаём индекс по полю start_time для оптимизации запросов
+	indexModel := mongo.IndexModel{
+		Keys: bson.D{{Key: "start_time", Value: 1}},
+	}
+	_, err := collection.Indexes().CreateOne(ctx, indexModel)
+	if err != nil {
+		return err
+	}
+
+	// Можно добавить другие индексы, если нужно
+	return nil
 }

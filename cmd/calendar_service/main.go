@@ -3,36 +3,31 @@ package main
 import (
 	"context"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/SeiFlow-3P2/calendar_service/internal/app"
+	"github.com/SeiFlow-3P2/calendar_service/internal/configs"
 )
 
 func main() {
-	ctx := context.Background()
+	// Загружаем переменные окружения
+	configs.LoadEnv()
 
-	app, err := app.NewApp(ctx)
-	if err != nil {
-		log.Fatalf("Failed to initialize app: %v", err)
+	// Формируем конфигурацию приложения
+	cfg := &app.Config{
+		Port:         configs.GetEnv("PORT", "9090"),
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
+		MongoURI:     configs.GetMongoURI(),
+		MongoDB:      configs.GetMongoDB(),
 	}
-	defer app.Close()
 
-	// Здесь можно добавить инициализацию gRPC сервера
+	// Создаём приложение
+	app := app.New(cfg)
 
-	log.Println("Calendar service started")
-
-	// Graceful shutdown
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-
-	log.Println("Shutting down...")
-	shutdownCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-
-	<-shutdownCtx.Done()
-	log.Println("Service stopped")
+	// Запускаем приложение
+	if err := app.Start(context.Background()); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }

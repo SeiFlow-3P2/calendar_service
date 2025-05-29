@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type CategoryRepository interface {
@@ -16,6 +17,7 @@ type CategoryRepository interface {
 	GetCategories(ctx context.Context, userID string) ([]*models.Category, error)
 	UpdateCategory(ctx context.Context, id string, updates *CategoryUpdates) (*models.Category, error)
 	DeleteCategory(ctx context.Context, id string) error
+	EnsureIndexes(ctx context.Context) error // Новый метод
 }
 
 type CategoryUpdates struct {
@@ -104,4 +106,29 @@ func (r *categoryRepository) DeleteCategory(ctx context.Context, id string) erro
 	collection := r.db.Collection("categories")
 	_, err := collection.DeleteOne(ctx, bson.M{"_id": id})
 	return err
+}
+
+func (r *categoryRepository) EnsureIndexes(ctx context.Context) error {
+	collection := r.db.Collection("categories")
+
+	// Создаём индекс по полю user_id для оптимизации запросов
+	indexModel := mongo.IndexModel{
+		Keys: bson.D{{Key: "user_id", Value: 1}},
+	}
+	_, err := collection.Indexes().CreateOne(ctx, indexModel)
+	if err != nil {
+		return err
+	}
+
+	// Создаём уникальный индекс по комбинации name и user_id
+	indexModel = mongo.IndexModel{
+		Keys:    bson.D{{Key: "name", Value: 1}, {Key: "user_id", Value: 1}},
+		Options: options.Index().SetUnique(true),
+	}
+	_, err = collection.Indexes().CreateOne(ctx, indexModel)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
