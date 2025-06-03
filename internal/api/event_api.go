@@ -31,7 +31,6 @@ func (h *EventServiceHandler) eventToResponse(event *models.Event) *pb.EventResp
 		StartTime:   event.StartTime.Format(time.RFC3339),
 		EndTime:     event.EndTime.Format(time.RFC3339),
 		Location:    wrapperspb.String(event.Location),
-		CalendarId:  event.ID, // Предполагаем, что calendar_id совпадает с event.ID
 		CategoryId:  event.CategoryID,
 		CreatedAt:   event.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:   event.UpdatedAt.Format(time.RFC3339),
